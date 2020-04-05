@@ -1,0 +1,10 @@
+2020-04-05 18:14:31 [root] WARNING: ++++++++++ insert STAR ITEM failed ++++++++++
+2020-04-05 18:14:31 [root] WARNING: 错误:  重复键违反唯一约束"AVMOO_STAR_pkey"
+DETAIL:  键值"(origin_url, name)=(https://avmask.com/cn/star/4d6c6b277436c6b3, 三島奈津子)" 已经存在
+
+2020-04-05 18:14:53 [py.warnings] WARNING: e:\program files (x86)\microsoft visual studio\shared\python37_64\lib\site-packages\scrapy\core\scraper.py:148: UserWarning: The "AVMOO_Spider.parse_detail" method is a generator and includes a "return" statement with a value different than None. This could lead to unexpected behaviour. Please see https://docs.python.org/3/reference/simple_stmts.html#the-return-statement for details about the semantics of the "return" statement within generators
+  warn_on_generator_with_return_value(spider, callback)
+
+2020-04-05 18:18:22 [py.warnings] WARNING: E:\Program Files (x86)\Microsoft Visual Studio\Shared\Python37_64\lib\site-packages\scrapy\core\scraper.py:148: UserWarning: The "AVMOO_Spider.parse_detail" method is a generator and includes a "return" statement with a value different than None. This could lead to unexpected behaviour. Please see https://docs.python.org/3/reference/simple_stmts.html#the-return-statement for details about the semantics of the "return" statement within generators
+  warn_on_generator_with_return_value(spider, callback)
+

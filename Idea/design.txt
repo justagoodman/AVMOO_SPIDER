@@ -1,0 +1,62 @@
+start_urls = [
+	"https://avmask.com/cn"
+	"https://avmask.com/cn/released"
+	"https://avmask.com/cn/popular"
+	"https://avmask.com/cn/actresses"
+	"https://avmask.com/cn/genre"
+]
+
+parse  ->入口函数:
+	if url == "https://avmask.com/cn/actresses"
+		yield Request(url,parse_stars)
+	elif url == "https://avmask.com/cn/genre"
+		yield Request(url,parse_genres)
+	else 
+		yield Request(url,parse_avs)
+
+
+parse_stars      ->av女星集合页面  ->[url,url....]->yeild  Request(url,parse_av)
+parse_genres     ->类别集合页面    ->[url,url....]->yeild  Request(url,parse_av)
+parse_avs        ->av集合页面
+parse_detail     ->av详情页面
+
+item AV
+	origin_url      ->页面地址
+	title           ->标题
+	AV_CODE         ->番号
+	publish_date    ->发行日期
+	video_length    ->视频长度
+	director        ->导演        {name, url}	      -> yeild Request(url,parse_avs)
+	studio          ->制作商      {name, url}	      -> yeild Request(url,parse_avs)
+	label           ->发行商      {name, url}	      -> yeild Request(url,parse_avs)
+	genres           ->类别        [{name, url}]
+	series          ->系列        {name, url}          -> yeild Request(url,parse_avs)
+	sample_imgs     ->样品图像     [{url}]
+	stars           ->演员        [{name, url}]
+
+
+item Star
+	origin_url  页面地址
+	name  波多野結衣
+    birthday  生日: 1988-05-24
+	age   年龄: 32
+	height 身高: 163cm
+	cup 罩杯: D
+	bust 胸围: 88cm
+	waist 腰围: 59cm
+	hipline 臀围: 85cm
+	birth_place 出生地: 京都府
+	hobby 爱好: ゲーム
+
+
+item Genre
+	genre_group  分组
+	url  页面地址
+	title  类别名称
+
+
+
+
+!!!!!!!!!!!!!!!   ATTENTION  !!!!!!!!!!!!!
+            该网站反爬措施较严厉，
+            爬取过快会导致IP被封
