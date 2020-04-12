@@ -10,19 +10,31 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 import time
 
+# Retry many times since proxies often fail
+RETRY_TIMES = 5
+# Retry on most error codes since proxies fail for different reasons
+RETRY_HTTP_CODES = [500, 503, 504, 403, 400, 404, 408]
+
 BOT_NAME = 'AVMOO'
 
 SPIDER_MODULES = ['AVMOO.spiders']
 NEWSPIDER_MODULE = 'AVMOO.spiders'
 
-LOG_ENABLED = True  # 是否启动日志记录，默认True
-LOG_ENCODING = 'UTF-8'
-LOG_FILE = 'AVMOO_SPIDER_{}.LOG'.format(time.strftime("%Y-%m-%d", time.localtime()))  # 日志输出文件，如果为NONE，就打印到控制台
-LOG_LEVEL = 'WARNING'  # 日志级别，默认debug
+DOWNLOAD_TIMEOUT = 10
+
+# HTTPERROR_ALLOW_ALL = True
+
+# JOBDIR = 'JOB'
+
+# LOG_ENABLED = True  # 是否启动日志记录，默认True
+# LOG_ENCODING = 'UTF-8'
+# # LOG_FILE = None
+# LOG_FILE = 'AVMOO_SPIDER_{}.LOG'.format(time.strftime("%Y-%m-%d", time.localtime()))  # 日志输出文件，如果为NONE，就打印到控制台
+# LOG_LEVEL = 'WARNING'  # 日志级别，默认debug
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'AVMOO (+http://www.yourdomain.com)'
+# USER_AGENT = 'Mozilla/5.0 (Windows NT 9.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -33,13 +45,13 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 0
 # The download delay setting will honor only one of:
-# CONCURRENT_REQUESTS_PER_DOMAIN = 16
+# CONCURRENT_REQUESTS_PER_DOMAIN = 10
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -59,8 +71,11 @@ DOWNLOAD_DELAY = 1
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   # 'AVMOO.middlewares.AvmooDownloaderMiddleware': 543,
-   'AVMOO.middlewares.GenreDownloadFilterMiddleWare': 100,
+   'AVMOO.middlewares.AvmooDownloaderMiddleware': 543,
+   'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': None,
+   'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
+   # 'AVMOO.middlewares.GenreDownloadFilterMiddleWare': 100,
+   # 'AVMOO.randomproxy.RandomProxy': 100,
 }
 
 # Enable or disable extensions

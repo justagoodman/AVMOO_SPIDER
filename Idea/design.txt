@@ -60,3 +60,18 @@ item Genre
 !!!!!!!!!!!!!!!   ATTENTION  !!!!!!!!!!!!!
             该网站反爬措施较严厉，
             爬取过快会导致IP被封
+
+
+class :: ProxyProvider   ->   提供随机proxy,
+	good_proxies = [...]    ->   经过Validator验证有效的proxy
+	proxies_observer        ->   监听good_proxies的改变，但长度较小时，通过ProxySource添加proxies并验证
+
+class :: ProxySource     ->   爬虫爬取不同网站的proxy
+
+class :: ProxyValidator  ->   检验proxy的可用性
+	proxies = [...]         ->   用于检验的proxies，每隔一定的时间就进行一次validate，去除无效proxy
+
+class ProxyFileHolder    ->   监听存储proxy的文件的变化，发生变化则检测内容是否合理，是则更新ProxyProvider的proxies，否则pass，间隔一定时间检测文件的修改时间
+
+
+Provider  has  [Source, Source], Validator

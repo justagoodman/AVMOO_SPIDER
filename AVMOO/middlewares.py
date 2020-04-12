@@ -6,7 +6,18 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 import psycopg2
 from scrapy import signals
+from AVMOO.ProxyService.ProxyProvider import ProxyProvider
 import scrapy.exceptions
+from AVMOO.ProxyService.Proxy import Proxy
+from twisted.internet.error import TimeoutError, DNSLookupError, \
+        ConnectionRefusedError, ConnectionDone, ConnectError, \
+        ConnectionLost, TCPTimedOutError
+from twisted.web.client import ResponseFailed
+
+from scrapy.exceptions import NotConfigured
+from scrapy.utils.response import response_status_message
+from scrapy.core.downloader.handlers.http11 import TunnelError
+import time
 
 
 class AvmooSpiderMiddleware(object):
@@ -62,6 +73,11 @@ class AvmooDownloaderMiddleware(object):
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
 
+    ProxyProvider = ProxyProvider()
+
+    def __init__(self):
+        self.DownloadDelay = 1
+
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
@@ -79,7 +95,15 @@ class AvmooDownloaderMiddleware(object):
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
-        return None
+        if len(self.ProxyProvider.proxies) == 0:
+            delay = self.DownloadDelay
+        else:
+            delay = self.DownloadDelay/len(self.ProxyProvider.proxies)
+        proxy = self.ProxyProvider.get_proxy()
+        request.meta['proxy_obj'] = proxy
+        request.meta['proxy'] = proxy.to_string()
+        time.sleep(delay)
+        # return None
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
@@ -88,29 +112,62 @@ class AvmooDownloaderMiddleware(object):
         # - return a Response object
         # - return a Request object
         # - or raise IgnoreRequest
+        # # 如果返回的response状态不是200，重新生成当前request对象
+        if response.status != 200:
+            if response.status == 404:
+                raise scrapy.exceptions.IgnoreRequest('404 Page Not Found')
+            if request.meta['proxy_obj'] is not None:
+                request.meta['proxy_obj'].bad_proxy()
+            # proxy = self.ProxyProvider.get_proxy()
+            new_req = request.copy()
+            new_req.dont_filter = True
+            # new_req.meta['proxy_obj'] = proxy
+            # new_req.meta['proxy'] = proxy.to_string()
+            return new_req
+        else:
+            if request.meta['proxy_obj'] is not None:
+                request.meta['proxy_obj'].good_proxy()
         return response
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()
         # (from other downloader middleware) raises an exception.
+        # if 'proxy' not in request.meta:
+        #     return
+        proxy_obj = request.meta['proxy_obj']
+        if isinstance(exception, (TunnelError, ConnectionRefusedError, ConnectionAbortedError, TCPTimedOutError,
+                                  TimeoutError)):
+            print(exception, "exception to loose")
+
+            if request.meta['proxy_obj'] is not None:
+                request.meta['proxy_obj'].bad_proxy()
+
+        elif isinstance(exception, (ConnectionLost, ConnectionResetError)):
+            print(exception, "exception to retry")
 
         # Must either:
         # - return None: continue processing this exception
         # - return a Response object: stops process_exception() chain
         # - return a Request object: stops process_exception() chain
-        pass
+
+        new_req = request.copy()
+        # proxy = self.ProxyProvider.get_proxy()
+        # if proxy is not None:
+        #     new_req.meta['proxy_obj'] = proxy
+        #     new_req.meta['proxy'] = proxy.to_string()
+        new_req.dont_filter = True
+        # print("using proxy ", new_req.meta['proxy'])
+        # new_req.priority = request.priority
+        # request.meta["exception"] = True
+        return new_req
+        #  return request.__setitem__("proxy", self.ProxyProvider.get_proxy())
 
     def spider_opened(self, spider):
+        # self.ProxyProvider.updater.update()
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
 class GenreDownloadFilterMiddleWare(object):
-    connection = psycopg2.connect(database="Scrapy",
-                                           user="postgres",
-                                           password="964719978",
-                                           host="127.0.0.1",
-                                           port="5432")
-    cursor = connection.cursor()
 
     def process_request(self, request, spider):
         # Called for each request that goes through the downloader
@@ -126,6 +183,7 @@ class GenreDownloadFilterMiddleWare(object):
         # if result is not None:
         #     spider.logger.info("already in records")
         #     raise scrapy.exceptions.IgnoreRequest("already in records")
+        # request.meta['proxy'] = self.ProxyProvider.get_proxy()
         return None
 
     def process_response(self, request, response, spider):

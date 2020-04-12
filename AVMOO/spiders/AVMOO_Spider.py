@@ -17,9 +17,9 @@ class AVMOO_Spider(scrapy.Spider):
 
     start_urls = [
         "https://avmask.com/cn",
-        "https://avmask.com/cn/released",
-        "https://avmask.com/cn/popular",
-        "https://avmask.com/cn/actresses",
+        # "https://avmask.com/cn/released",
+        # "https://avmask.com/cn/popular",
+        # "https://avmask.com/cn/actresses",
         "https://avmask.com/cn/genre",
     ]
 
@@ -71,20 +71,27 @@ class AVMOO_Spider(scrapy.Spider):
     解析女星集合页面， 将解析到的每个女星地址传递给parse_avs，进一步生成女星Item，和该女星的所有影片
     '''
     def parse_stars(self, response):
+        if not self._is_real_page(response):
+            yield scrapy.Request(response.url, self.parse_stars)
         stars = response.css('#waterfall a.avatar-box')
         for star in stars:
             star_url = self.extract_css_single(star, 'a::attr(href)')
-            yield scrapy.Request(star_url, self.parse_avs)
+            if not self._check_star_exist(star_url):
+                yield scrapy.Request(star_url, self.parse_avs)
+            else:
+                logging.info("+++++++++++ skip one duplicated star record ++++++++++++")
 
         next_page_url = self._find_next_page_url(response)
         if next_page_url is not None:
-            response.follow(next_page_url, self.parse_stars)
+            yield response.follow(next_page_url, self.parse_stars)
 
     '''
     解析类别页面，为每一个分类生成Genre Item
     将每个类别的地址传递给parse_avs，进一步解析类别中的所有影片
     '''
     def parse_genres(self, response):
+        if not self._is_real_page(response):
+            yield scrapy.Request(response.url, self.parse_genres)
         h4_tags = response.css('div.container-fluid h4')
         # row_genres = response.css('div.container-fluid h4 + div.row')
         for h4_tag in h4_tags:
@@ -103,22 +110,45 @@ class AVMOO_Spider(scrapy.Spider):
     将解析到的av详情地址传递给parse_detail
     '''
     def parse_avs(self, response):
+        if not self._is_real_page(response):
+            yield scrapy.Request(response.url, self.parse_avs)
         star = response.css('#waterfall div.avatar-box')
         if len(star) != 0:
+            av_details = response.css('#waterfall a.movie-box')
+            for av_detail in av_details:
+                av_detail_url = av_detail.css('a::attr(href)').get()
+                if not self._check_av_exist(av_detail_url):
+                    yield scrapy.Request(av_detail_url, self.parse_detail)
+                else:
+                    logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
             star_item = self.generate_star_item(response, star[0])
             yield star_item
 
-        av_details = response.css('#waterfall a.movie-box')
-        for av_detail in av_details:
-            av_detail_url = av_detail.css('a::attr(href)').get()
-            if not self._check_av_exist(av_detail_url):
-                yield scrapy.Request(av_detail_url, self.parse_detail)
-            else:
-                logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
+        # av_details = response.css('#waterfall a.movie-box')
+        # for av_detail in av_details:
+        #     av_detail_url = av_detail.css('a::attr(href)').get()
+        #     if not self._check_av_exist(av_detail_url):
+        #         yield scrapy.Request(av_detail_url, self.parse_detail)
+        #     else:
+        #         logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
+        #
+        # next_page_url = self._find_next_page_url(response)
+        # if next_page_url is not None:
+        #     yield response.follow(next_page_url, self.parse_avs)
 
-        next_page_url = self._find_next_page_url(response)
-        if next_page_url is not None:
-            yield response.follow(next_page_url, self.parse_avs)
+        else:
+
+            av_details = response.css('#waterfall a.movie-box')
+            for av_detail in av_details:
+                av_detail_url = av_detail.css('a::attr(href)').get()
+                if not self._check_av_exist(av_detail_url):
+                    yield scrapy.Request(av_detail_url, self.parse_detail)
+                else:
+                    logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
+
+            next_page_url = self._find_next_page_url(response)
+            if next_page_url is not None:
+                yield response.follow(next_page_url, self.parse_avs)
 
     '''
     解析av详情页面，处理parse_av中解析到的所有av
@@ -146,7 +176,8 @@ class AVMOO_Spider(scrapy.Spider):
                 return json_arr
             else:
                 return {}
-
+        if not self._is_real_page(response):
+            yield scrapy.Request(response.url, self.parse_detail)
         av_item = AV_Item()
         container = response.css('div.container')
         av_item['origin_url'] = response.url
@@ -165,18 +196,18 @@ class AVMOO_Spider(scrapy.Spider):
                     av_item['video_length'] = self.extract_css_single(p_tag, 'p::text').replace(" ", "")
                 elif p_tag_text.find("导演:") != -1:
                     av_item['director'] = get_p_json_obj(p_tag)
-                    yield scrapy.Request(av_item['director']['url'], self.parse_avs)
+                    # yield scrapy.Request(av_item['director']['url'], self.parse_avs)
             else:
                 p_tag_text = self.extract_css_single(p_tag, 'p::text')
                 if p_tag_text.find("制作商:") != -1:
                     av_item['studio'] = get_p_json_obj(p_tag.css('p + p'))
-                    yield scrapy.Request(av_item['studio']['url'], self.parse_avs)
+                    # yield scrapy.Request(av_item['studio']['url'], self.parse_avs)
                 elif p_tag_text.find("发行商:") != -1:
                     av_item['label'] = get_p_json_obj(p_tag.css('p + p'))
-                    yield scrapy.Request(av_item['label']['url'], self.parse_avs)
+                    # yield scrapy.Request(av_item['label']['url'], self.parse_avs)
                 elif p_tag_text.find("系列:") != -1:
                     av_item['series'] = get_p_json_obj(p_tag.css('p + p'))
-                    yield scrapy.Request(av_item['series']['url'], self.parse_avs)
+                    # yield scrapy.Request(av_item['series']['url'], self.parse_avs)
                 elif p_tag_text.find("类别:") != -1:
                     av_item['genres'] = get_p_json_obj(p_tag.css('p + p'))
 
@@ -188,7 +219,7 @@ class AVMOO_Spider(scrapy.Spider):
                     "name": star.css('span::text').get(),
                     "url": star.css('a::attr(href)').get()
                 }
-                yield scrapy.Request(obj['url'], self.parse_avs)
+                # yield scrapy.Request(obj['url'], self.parse_avs)
                 arr.append(obj)
             av_item['stars'] = arr
 
@@ -251,5 +282,27 @@ class AVMOO_Spider(scrapy.Spider):
         results = self.cursor.fetchall()
 
         return len(results) != 0
+
+    '''
+    数据库中查询是否存在star对应的origin_url
+    @param url  {str}  ->  av url  eg:  "https://avmask.com/cn/movie/0d1bc15588833349"
+    @return True       ->  av exists
+    @return False      ->  av not exists 
+    '''
+    def _check_star_exist(self, url):
+        origin_url = str(url)
+        sql = '''
+        SELECT origin_url FROM public."AVMOO_STAR" where origin_url = '{}';
+        '''.format(
+            origin_url
+        )
+        self.cursor.execute(sql)
+        results = self.cursor.fetchall()
+
+        return len(results) != 0
+
+    def _is_real_page(self, response):
+        logo = response.css('.logo')
+        return len(logo) != 0
 
 
