@@ -57,7 +57,7 @@ item Genre
 
 
 
-!!!!!!!!!!!!!!!   ATTENTION  !!!!!!!!!!!!!
+!!!!!!!!!!!!!!!   ATTENTION  !!!!!!!!!!!!!!!
             该网站反爬措施较严厉，
             爬取过快会导致IP被封
 
@@ -75,3 +75,10 @@ class ProxyFileHolder    ->   监听存储proxy的文件的变化，发生变化
 
 
 Provider  has  [Source, Source], Validator
+
+
+2020 / 04 / 13
+
+	ProxyProvider -> proxy_minimum = 5 时目前效率最高
+	加入机器学习？ 寻找最适合的Proxy_Provider -> proxy_minimum？
+	ProxyValidator -> get_good_proxy 改成非阻塞，如果没有可用的proxy则返回None
