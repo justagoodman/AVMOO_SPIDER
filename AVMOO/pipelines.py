@@ -51,7 +51,7 @@ class DataBasePipeline(object):
             else:
                 key_str = key_str + key + ", "
 
-            obj_to_str = json.dumps(item[key], ensure_ascii=False).replace("'", "''")
+            obj_to_str = json.dumps(item[key], ensure_ascii=False).replace("'", "''")   # 防止 ' 在入库时出错，替换成 '' 入库
             if (obj_to_str[0] == '{') | (obj_to_str[0] == '['):
                 obj_to_str = "'" + obj_to_str + "'"
             else:
