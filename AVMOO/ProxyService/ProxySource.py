@@ -51,8 +51,9 @@ class ProxySource(object):
         url = self.base_url.format(index)
         results = []
         try:
-            res = requests.get(url, headers=header, timeout=1)
-        except:
+            res = requests.get(url, headers=header, timeout=3)
+        except Exception as e:
+            print(e)
             return []
         soup = Soup(res.text, features='html.parser')
         items = soup.find_all('tr')[1:]
@@ -66,11 +67,12 @@ class ProxySource(object):
     def _work(self):
         while self._flag:
             time.sleep(self.time_span)
+            logging.info("updating source")
             self.get_proxies(page_count=5)
 
 
 class KuaiProxySource(ProxySource):
-    base_url = "https://www.kuaidaili.com/free/intr/{}"
+    base_url = "https://www.kuaidaili.com/free/inha/{}"
 
     def __init__(self):
         ProxySource.__init__(self)
@@ -289,9 +291,109 @@ class XiaoShuProxySource(ProxySource):
         return results
 
 
+class SixSixProxySource(ProxySource):
+    base_url = "http://www.66ip.cn/mo.php?" \
+               "sxb=&tqsl=100&port=&export=&ktip=&sxa=&" \
+               "submit=%CC%E1++%C8%A1&textarea=http%3A%2F%2Fwww.66ip.cn%2F%3Fsxb%3D%26tqsl%3D100%26ports%255B%255D2%3D%26ktip%3D%26sxa%3D%26radio%3Dradio%26submit%3D%25CC%25E1%2B%2B%25C8%25A1"
+
+    time_span = 60*60
+
+    def __init__(self):
+        ProxySource.__init__(self)
+
+    def get_proxies(self, **kwargs):
+        res = self.parse_page()
+        self._ips = res
+
+    def parse_page(self, **kwargs):
+        res = []
+        try:
+            response = requests.get(self.base_url, timeout=2)
+            soup = Soup(response.text, features="html.parser")
+            body = soup.get_text()
+            re_pattern = '\d*.\d*.\d*.\d*:\d*'
+            res_tem = re.findall(re_pattern, body)
+            for ip in res_tem:
+                _ip = ip.split(":")[0]
+                port = ip.split(":")[1]
+                res.append({'ip': _ip, 'port': port, 'type': "HTTP"})
+            return res
+        except Exception as e:
+            print(e)
+            return []
+
+
+class ZhangDaYeProxySource(ProxySource):
+    base_url = "https://www.zdaye.com/dayProxy/ip/320452.html"
+
+    time_span = 60*60
+
+    def __init__(self):
+        ProxySource.__init__(self)
+
+    def get_proxies(self, **kwargs):
+        res = self.parse_page(self.base_url)
+        self._ips = res
+
+    def parse_page(self, url):
+        results = []
+        try:
+            res = requests.get(url, headers=header, timeout=5, verify=False)
+        except Exception as e:
+            print(e)
+            return []
+        soup = Soup(res.text, features='html.parser')
+        items = soup.find_all('h3')
+        index = 0
+        while len(results) < 100:
+            url = self.base_url+items[index].find_all('a')[0].get('href')
+            try:
+                item_res = requests.get(url, timeout=5)
+            except:
+                continue
+            soup_item = Soup(item_res.text, features='html.parser')
+            re_pattern = '\d*.\d*.\d*.\d*:\d*@\w*'
+            cont = soup_item.find_all(class_="cont")[0].text
+            res_tem = re.findall(re_pattern, cont)
+            for ip in res_tem:
+                ip_port = ip.split('@')[0]
+                _type = ip.split('@')[1].lower()
+                ip = ip_port.split(":")[0]
+                port = ip_port.split(":")[1]
+                results.append({'ip': ip, 'port': port, 'type': _type})
+            index += 1
+            time.sleep(3)
+        return results
+
+
+class KaiXinProxySource(ProxySource):
+    base_url = "http://www.kxdaili.com/dailiip.html"
+
+    def __init__(self):
+        ProxySource.__init__(self)
+
+    def get_proxies(self, **kwargs):
+        res = self.parse_page(0)
+        self._ips = res
+
+    def parse_page(self, index):
+        res = []
+        try:
+            response = requests.get(self.base_url, headers=header).text
+            soup = Soup(response, features="html.parser")
+            items = soup.find_all('tr')[1:]
+            for item in items:
+                tds = item.find_all('td')
+                # 从对应位置获取ip，端口，类型
+                ip, port, _type = tds[0].text, int(tds[1].text), tds[3].text.lower()
+                res.append({'ip': ip, 'port': port, 'type': _type})
+            return res
+        except Exception as e:
+            print(e)
+            return []
 
 
 if __name__ == "__main__":
-    a = QiYunProxySource()
+    a = SixSixProxySource()
 
     print(a.ips)

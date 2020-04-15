@@ -6,7 +6,7 @@ import logging
 import queue
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 from AVMOO.ProxyService.ProxySource import XiciProxySource, GlobalProxySource, KuaiProxySource, YunProxySource, \
-    QiYunProxySource, XiaoShuProxySource
+    QiYunProxySource, XiaoShuProxySource, SixSixProxySource, KaiXinProxySource
 
 header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                         'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -14,7 +14,7 @@ header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 
 
 class ProxyValidator:
-    time_span = 60*1
+    time_span = 30
 
     good_proxies = []
 
@@ -24,7 +24,9 @@ class ProxyValidator:
         KuaiProxySource(),
         YunProxySource(),
         QiYunProxySource(),
-        XiaoShuProxySource()
+        XiaoShuProxySource(),
+        SixSixProxySource(),
+        KaiXinProxySource()
     ]
 
     def __init__(self):
@@ -45,12 +47,13 @@ class ProxyValidator:
         for t in ths:
             t.join()
         self._pause = False
-        print("++++++++++++++++++++++++++++++++++++++++++++++++++\n", self.good_proxies)
+        logging.info("found {} available proxies".format(self.good_proxies))
 
     def get_good_proxy(self):
         if len(self.good_proxies) == 0:
-            self.add_proxy()
-            return self.get_good_proxy()
+            return None
+            # self.add_proxy()
+            # return self.get_good_proxy()
         return self.good_proxies.pop()
 
     def get_all(self):

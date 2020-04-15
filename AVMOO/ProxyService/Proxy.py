@@ -1,11 +1,14 @@
+import logging
+
+
 class Proxy(object):
     ip = ""
     port = 0
     type = "HTTP"
     err_times = 0
-    max_err_times = 10
+    max_err_times = 5
 
-    def __init__(self, ip, port, _type, provider):
+    def __init__(self, ip="127.0.0.1", port="80", _type="HTTP", provider=None):
         self.ip = ip
         self.port = port
         self.type = _type
@@ -22,3 +25,12 @@ class Proxy(object):
     def to_string(self):
         s = self.type + "://" + self.ip + ":" + str(self.port)
         return s
+
+
+if __name__ == "__main__":
+    a = Proxy()
+    print(a.to_string())
+    a = []
+    import random
+    b = random.choice(a)
+    print(b)

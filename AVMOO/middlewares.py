@@ -77,6 +77,10 @@ class AvmooDownloaderMiddleware(object):
 
     def __init__(self):
         self.DownloadDelay = 1
+        self.request_times = 0
+        self.check_frequency = 50
+        self.success_request_times = 0
+        self.failed_request_times = 0
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -86,23 +90,47 @@ class AvmooDownloaderMiddleware(object):
         return s
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
-
         # Must either:
         # - return None: continue processing this request
         # - or return a Response object
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
+        spider.logger.info("still got {} proxies".format(len(self.ProxyProvider.proxies)))
+
+        self.request_times += 1
+
+        if self.request_times > self.check_frequency:
+            if self.success_request_times/self.failed_request_times >= 4:
+                self.ProxyProvider.add_proxy()
+            # if self.failed_request_times < int(0.1*self.check_frequency):
+            #     self.ProxyProvider.add_proxy()
+            # if self.success_request_times > int(0.1*self.check_frequency):
+            #     self.ProxyProvider.add_proxy()
+            self.failed_request_times = 0
+            self.success_request_times = 0
+            self.request_times = 0
+
+        if len(self.ProxyProvider.proxies) < self.ProxyProvider.minimum_proxy:
+            self.ProxyProvider.get_all()
+
         if len(self.ProxyProvider.proxies) == 0:
+            # if request.meta["proxy_exception"] is True:
+            #     delay = 0
+            # else:
+            #     delay = self.DownloadDelay
             delay = self.DownloadDelay
+            time.sleep(delay)
+            # proxy = self.ProxyProvider.get_proxy()
+            # request.meta['proxy_obj'] = proxy
+            # request.meta['proxy'] = proxy.to_string()
         else:
+
             delay = self.DownloadDelay/len(self.ProxyProvider.proxies)
-        proxy = self.ProxyProvider.get_proxy()
-        request.meta['proxy_obj'] = proxy
-        request.meta['proxy'] = proxy.to_string()
-        time.sleep(delay)
+            proxy = self.ProxyProvider.get_proxy()
+            request.meta['proxy_obj'] = proxy
+            request.meta['proxy'] = proxy.to_string()
+            time.sleep(delay)
         # return None
 
     def process_response(self, request, response, spider):
@@ -116,6 +144,9 @@ class AvmooDownloaderMiddleware(object):
         if response.status != 200:
             if response.status == 404:
                 raise scrapy.exceptions.IgnoreRequest('404 Page Not Found')
+
+            self.failed_request_times += 1
+
             if request.meta['proxy_obj'] is not None:
                 request.meta['proxy_obj'].bad_proxy()
             # proxy = self.ProxyProvider.get_proxy()
@@ -125,6 +156,7 @@ class AvmooDownloaderMiddleware(object):
             # new_req.meta['proxy'] = proxy.to_string()
             return new_req
         else:
+            self.success_request_times += 1
             if request.meta['proxy_obj'] is not None:
                 request.meta['proxy_obj'].good_proxy()
         return response
@@ -134,7 +166,9 @@ class AvmooDownloaderMiddleware(object):
         # (from other downloader middleware) raises an exception.
         # if 'proxy' not in request.meta:
         #     return
-        proxy_obj = request.meta['proxy_obj']
+
+        self.failed_request_times += 1
+
         if isinstance(exception, (TunnelError, ConnectionRefusedError, ConnectionAbortedError, TCPTimedOutError,
                                   TimeoutError)):
             print(exception, "exception to loose")
@@ -145,12 +179,17 @@ class AvmooDownloaderMiddleware(object):
         elif isinstance(exception, (ConnectionLost, ConnectionResetError)):
             print(exception, "exception to retry")
 
+        else:
+            print(exception, "other exceptions")
+
         # Must either:
         # - return None: continue processing this exception
         # - return a Response object: stops process_exception() chain
         # - return a Request object: stops process_exception() chain
 
         new_req = request.copy()
+
+        # new_req.meta['i'] = True
         # proxy = self.ProxyProvider.get_proxy()
         # if proxy is not None:
         #     new_req.meta['proxy_obj'] = proxy
