@@ -71,14 +71,15 @@ class :: ProxySource     ->   爬虫爬取不同网站的proxy
 class :: ProxyValidator  ->   检验proxy的可用性
 	proxies = [...]         ->   用于检验的proxies，每隔一定的时间就进行一次validate，去除无效proxy
 
-class ProxyFileHolder    ->   监听存储proxy的文件的变化，发生变化则检测内容是否合理，是则更新ProxyProvider的proxies，否则pass，间隔一定时间检测文件的修改时间
-
+class :: ProxyFileHolder    ->   监听存储proxy的文件的变化，发生变化则检测内容是否合理，是则更新ProxyProvider的proxies，否则pass，间隔一定时间检测文件的修改时间
 
 Provider  has  [Source, Source], Validator
 
 
 2020 / 04 / 13
-
 	ProxyProvider -> proxy_minimum = 5 时目前效率最高
-	加入机器学习？ 寻找最适合的Proxy_Provider -> proxy_minimum？
-	ProxyValidator -> get_good_proxy 改成非阻塞，如果没有可用的proxy则返回None
+	ProxyValidator -> get_good_proxy 改成非阻塞，如果没有可用的proxy则返回None      done
+	2020/04/13
+	+ class :: ProxyHolder     ->   记录使用过的ip，和被剔除的次数，大于一定的次数则不再进入到Provider
+	middleware -> ProxyProvider.remove_proxy -> ProxyProvider.add_proxy -> ProxyHolder.get_available -> 添加proxy
+	ProxyValidator.validated_proxies -> ProxyHolder
