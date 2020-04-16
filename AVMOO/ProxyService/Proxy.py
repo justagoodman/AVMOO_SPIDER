@@ -75,11 +75,18 @@ class Proxy(object):
         return per
 
     '''
-    转换为字符串
+    转换为 scrapy proxy 字符串
     '''
     def to_string(self):
         s = self.type.lower() + "://" + self.ip + ":" + str(self.port)
         return s
+
+    '''
+    转换为 requests proxy 格式
+    '''
+    def to_dict(self):
+        s = self.type + '://' + self.ip + ':' + str(self.port)
+        return {'http': s, 'https': s}
 
 
 if __name__ == "__main__":
