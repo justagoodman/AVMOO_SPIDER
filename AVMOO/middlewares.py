@@ -77,10 +77,6 @@ class AvmooDownloaderMiddleware(object):
 
     def __init__(self):
         self.DownloadDelay = 1
-        self.request_times = 0
-        self.check_frequency = 50
-        self.success_request_times = 0
-        self.failed_request_times = 0
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -96,41 +92,22 @@ class AvmooDownloaderMiddleware(object):
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
-        spider.logger.info("still got {} proxies".format(len(self.ProxyProvider.proxies)))
+        # spider.logger.info("still got {} proxies".format(len(self.ProxyProvider.proxies)))
 
-        self.request_times += 1
+        proxy = self.ProxyProvider.get_proxy()
 
-        if self.request_times > self.check_frequency:
-            if self.success_request_times/self.failed_request_times >= 4:
-                self.ProxyProvider.add_proxy()
-            # if self.failed_request_times < int(0.1*self.check_frequency):
-            #     self.ProxyProvider.add_proxy()
-            # if self.success_request_times > int(0.1*self.check_frequency):
-            #     self.ProxyProvider.add_proxy()
-            self.failed_request_times = 0
-            self.success_request_times = 0
-            self.request_times = 0
-
-        if len(self.ProxyProvider.proxies) < self.ProxyProvider.minimum_proxy:
-            self.ProxyProvider.get_all()
-
-        if len(self.ProxyProvider.proxies) == 0:
-            # if request.meta["proxy_exception"] is True:
-            #     delay = 0
-            # else:
-            #     delay = self.DownloadDelay
+        if proxy is None:
+            if "proxy" in request.meta.keys:
+                request.meta.pop("proxy")
+            if "proxy_obj" in request.meta.keys:
+                request.meta.pop("proxy_obj")
             delay = self.DownloadDelay
-            time.sleep(delay)
-            # proxy = self.ProxyProvider.get_proxy()
-            # request.meta['proxy_obj'] = proxy
-            # request.meta['proxy'] = proxy.to_string()
         else:
-
             delay = self.DownloadDelay/len(self.ProxyProvider.proxies)
-            proxy = self.ProxyProvider.get_proxy()
             request.meta['proxy_obj'] = proxy
             request.meta['proxy'] = proxy.to_string()
-            time.sleep(delay)
+
+        time.sleep(delay)
         # return None
 
     def process_response(self, request, response, spider):
@@ -145,8 +122,6 @@ class AvmooDownloaderMiddleware(object):
             if response.status == 404:
                 raise scrapy.exceptions.IgnoreRequest('404 Page Not Found')
 
-            self.failed_request_times += 1
-
             if request.meta['proxy_obj'] is not None:
                 request.meta['proxy_obj'].bad_proxy()
             # proxy = self.ProxyProvider.get_proxy()
@@ -156,7 +131,6 @@ class AvmooDownloaderMiddleware(object):
             # new_req.meta['proxy'] = proxy.to_string()
             return new_req
         else:
-            self.success_request_times += 1
             if request.meta['proxy_obj'] is not None:
                 request.meta['proxy_obj'].good_proxy()
         return response
@@ -167,20 +141,21 @@ class AvmooDownloaderMiddleware(object):
         # if 'proxy' not in request.meta:
         #     return
 
-        self.failed_request_times += 1
-
         if isinstance(exception, (TunnelError, ConnectionRefusedError, ConnectionAbortedError, TCPTimedOutError,
                                   TimeoutError)):
             print(exception, "exception to loose")
-
             if request.meta['proxy_obj'] is not None:
                 request.meta['proxy_obj'].bad_proxy()
 
         elif isinstance(exception, (ConnectionLost, ConnectionResetError)):
-            print(exception, "exception to retry")
+            if request.meta['proxy_obj'] is not None:
+                request.meta['proxy_obj'].bad_proxy()
+            print(exception, "exception to loose")
 
         else:
-            print(exception, "other exceptions")
+            if request.meta['proxy_obj'] is not None:
+                request.meta['proxy_obj'].bad_proxy()
+            print(exception, "exception to loose")
 
         # Must either:
         # - return None: continue processing this exception
