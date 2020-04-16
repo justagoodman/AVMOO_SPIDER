@@ -83,3 +83,7 @@ Provider  has  [Source, Source], Validator
 	+ class :: ProxyHolder     ->   记录使用过的ip，和被剔除的次数，大于一定的次数则不再进入到Provider
 	middleware -> ProxyProvider.remove_proxy -> ProxyProvider.add_proxy -> ProxyHolder.get_available -> 添加proxy
 	ProxyValidator.validated_proxies -> ProxyHolder
+
+2020 / 04 /15
+	class :: ProxyDispatcher -> get_proxy()  总是给出一个与上次使用时间间隔为 download_delay 的 proxy
+	class :: Provider -> 放弃
