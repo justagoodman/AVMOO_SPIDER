@@ -16,17 +16,17 @@ class AVMOO_Spider(scrapy.Spider):
     cursor = connection.cursor()
 
     start_urls = [
-        "https://avmask.com/cn",
-        "https://avmask.com/cn/released",
-        "https://avmask.com/cn/popular",
-        "https://avmask.com/cn/actresses",
-        "https://avmask.com/cn/genre",
+        "https://avmoo.host/cn",
+        "https://avmoo.host/cn/released",
+        "https://avmoo.host/cn/popular",
+        "https://avmoo.host/cn/actresses",
+        "https://avmoo.host/cn/genre",
     ]
 
     def parse(self, response):
-        if response.url == "https://avmask.com/cn/actresses":
+        if response.url == "https://avmoo.host/cn/actresses":
             yield scrapy.Request(response.url, self.parse_stars)
-        elif response.url == "https://avmask.com/cn/genre":
+        elif response.url == "https://avmoo.host/cn/genre":
             yield scrapy.Request(response.url, self.parse_genres)
         else:
             yield scrapy.Request(response.url, self.parse_avs)
@@ -117,11 +117,11 @@ class AVMOO_Spider(scrapy.Spider):
             av_details = response.css('#waterfall a.movie-box')
             for av_detail in av_details:
                 av_detail_url = av_detail.css('a::attr(href)').get()
-                yield scrapy.Request(av_detail_url, self.parse_detail)
-                # if not self._check_av_exist(av_detail_url):
-                #     yield scrapy.Request(av_detail_url, self.parse_detail)
-                # else:
-                #     logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
+                # yield scrapy.Request(av_detail_url, self.parse_detail)
+                if not self._check_av_exist(av_detail_url):
+                    yield scrapy.Request(av_detail_url, self.parse_detail)
+                else:
+                    logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
             star_item = self.generate_star_item(response, star[0])
             yield star_item
 
@@ -142,11 +142,11 @@ class AVMOO_Spider(scrapy.Spider):
             av_details = response.css('#waterfall a.movie-box')
             for av_detail in av_details:
                 av_detail_url = av_detail.css('a::attr(href)').get()
-                yield scrapy.Request(av_detail_url, self.parse_detail)
-                # if not self._check_av_exist(av_detail_url):
-                #     yield scrapy.Request(av_detail_url, self.parse_detail)
-                # else:
-                #     logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
+                # yield scrapy.Request(av_detail_url, self.parse_detail)
+                if not self._check_av_exist(av_detail_url):
+                    yield scrapy.Request(av_detail_url, self.parse_detail)
+                else:
+                    logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
 
             next_page_url = self._find_next_page_url(response)
             if next_page_url is not None:
