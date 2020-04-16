@@ -1,4 +1,3 @@
-import json
 import requests
 import time
 from bs4 import BeautifulSoup as Soup
@@ -12,7 +11,7 @@ header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 
 
 '''
-每次提供一百个左右proxy，应用缓存机制
+每次提供一百个左右proxy
 每次网络请求结束后，记录当前时间作为更新时间，
 定期开启线程更新proxy，每个源的更新时间不同
 '''

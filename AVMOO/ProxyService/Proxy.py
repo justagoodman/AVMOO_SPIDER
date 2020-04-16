@@ -7,10 +7,11 @@ class Proxy(object):
     type = "HTTP"
     err_times = 0
     success_times = 0
-    percent_flag = 0.3    # fail / (fail+success) > $percent_flag$ -> remove(self)
+    percent_flag = 0.2    # fail / (fail+success) > $percent_flag$ -> remove(self)
     kick_out_times = 0
     ban_per_flag = 0.8      # when per of fails greater than 0.5 , we don't use this proxy anymore
     baned = False
+    last_request_time = 0
 
     def __init__(self, ip="127.0.0.1", port="80", _type="HTTP", holder=None):
         if holder is None:
@@ -40,15 +41,17 @@ class Proxy(object):
             self.kick_out_times += 1
             self.holder.kick_proxy(self)
         if self.current_fail_percent() > self.ban_per_flag:
-            logging.warning("this proxy {} will not use anymore ".format(self))
+            logging.warning("this proxy {} will not use anymore ".format(self.to_string()))
             self.baned = True
 
     def current_fail_percent(self):
+        if self.err_times+self.success_times == 0:
+            return 0
         per = self.err_times / (self.err_times+self.success_times)
         return per
 
     def to_string(self):
-        s = self.type + "://" + self.ip + ":" + str(self.port)
+        s = self.type.lower() + "://" + self.ip + ":" + str(self.port)
         return s
 
 

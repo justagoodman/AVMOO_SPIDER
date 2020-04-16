@@ -1,10 +1,7 @@
-import json
 import requests
 import time
 import threading
 import logging
-import queue
-from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 from AVMOO.ProxyService.ProxySource import XiciProxySource, GlobalProxySource, KuaiProxySource, YunProxySource, \
     QiYunProxySource, XiaoShuProxySource, SixSixProxySource, KaiXinProxySource
 
@@ -76,9 +73,9 @@ class ProxyValidator:
             # url = 'https://www.baidu.com/'
             url = 'https://avmoo.host/cn'
             r = requests.get(url, headers=header, proxies=pro, timeout=30)
-            print(r)
+            # print(r)
             r.raise_for_status()
-            print(r.status_code, ip['ip'])
+            # print(r.status_code, ip['ip'])
         except Exception as e:
             pass
             # logging.info("check proxy {} err:{}".format(ip, e))
