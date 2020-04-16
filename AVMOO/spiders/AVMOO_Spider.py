@@ -79,7 +79,8 @@ class AVMOO_Spider(scrapy.Spider):
             if not self._check_star_exist(star_url):
                 yield scrapy.Request(star_url, self.parse_avs)
             else:
-                logging.info("+++++++++++ skip one duplicated star record ++++++++++++")
+                pass
+                # logging.info("+++++++++++ skip one duplicated star record ++++++++++++")
 
         next_page_url = self._find_next_page_url(response)
         if next_page_url is not None:
@@ -121,7 +122,8 @@ class AVMOO_Spider(scrapy.Spider):
                 if not self._check_av_exist(av_detail_url):
                     yield scrapy.Request(av_detail_url, self.parse_detail)
                 else:
-                    logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
+                    pass
+                    # logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
             star_item = self.generate_star_item(response, star[0])
             yield star_item
 
@@ -198,18 +200,18 @@ class AVMOO_Spider(scrapy.Spider):
                     av_item['video_length'] = self.extract_css_single(p_tag, 'p::text').replace(" ", "")
                 elif p_tag_text.find("导演:") != -1:
                     av_item['director'] = get_p_json_obj(p_tag)
-                    # yield scrapy.Request(av_item['director']['url'], self.parse_avs)
+                    yield scrapy.Request(av_item['director']['url'], self.parse_avs)
             else:
                 p_tag_text = self.extract_css_single(p_tag, 'p::text')
                 if p_tag_text.find("制作商:") != -1:
                     av_item['studio'] = get_p_json_obj(p_tag.css('p + p'))
-                    # yield scrapy.Request(av_item['studio']['url'], self.parse_avs)
+                    yield scrapy.Request(av_item['studio']['url'], self.parse_avs)
                 elif p_tag_text.find("发行商:") != -1:
                     av_item['label'] = get_p_json_obj(p_tag.css('p + p'))
-                    # yield scrapy.Request(av_item['label']['url'], self.parse_avs)
+                    yield scrapy.Request(av_item['label']['url'], self.parse_avs)
                 elif p_tag_text.find("系列:") != -1:
                     av_item['series'] = get_p_json_obj(p_tag.css('p + p'))
-                    # yield scrapy.Request(av_item['series']['url'], self.parse_avs)
+                    yield scrapy.Request(av_item['series']['url'], self.parse_avs)
                 elif p_tag_text.find("类别:") != -1:
                     av_item['genres'] = get_p_json_obj(p_tag.css('p + p'))
 
@@ -221,7 +223,7 @@ class AVMOO_Spider(scrapy.Spider):
                     "name": star.css('span::text').get(),
                     "url": star.css('a::attr(href)').get()
                 }
-                # yield scrapy.Request(obj['url'], self.parse_avs)
+                yield scrapy.Request(obj['url'], self.parse_avs)
                 arr.append(obj)
             av_item['stars'] = arr
 
