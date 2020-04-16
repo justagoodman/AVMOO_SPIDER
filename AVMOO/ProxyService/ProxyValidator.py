@@ -17,7 +17,7 @@ class ProxyValidator:
 
     ProxyHolder = None
 
-    time_span = 30
+    time_span = 30  # 检测间隔
 
     Sources = [
         XiciProxySource(),

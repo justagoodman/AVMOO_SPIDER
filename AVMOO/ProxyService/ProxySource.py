@@ -24,7 +24,7 @@ class ProxySource(object):
 
     _ips = []
 
-    time_span = 60*30
+    time_span = 60*30  # 更新间隔
 
     def __init__(self):
         self._flag = True  # 线程停止信号
