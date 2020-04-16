@@ -20,9 +20,19 @@ Proxy类接受请求信息的反馈，调用good_proxy表示进行了一次成�
 # 如何使用 ?
 
 proxy_holder = ProxyHolder()<br>
-proxy_holder.get_one()
+proxy = proxy_holder.get_one()<br>
+
+res = requests.get(’https://www.baidu.com‘, proxies=proxy.to_dict())<br>
+
+if res.status != 200:<br>
+&nbsp;&nbsp;  proxy.bad_proxy()<br>
+else:<br>
+&nbsp;&nbsp;  proxy.good_proxy()
 
 # tips
+
+Proxy.to_string() 生成用于scrapy Request的proxy字符串<br>
+Proxy.to_dict()   生成用于requests proxies 的字典<br>
 
 ProxyHolder的初始化会初始化所有的ProxySource爬取免费代理再进行一次完整的检测，所以会消耗3-5min的时间<br>
 
