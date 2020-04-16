@@ -3,6 +3,10 @@ import time
 import os
 from AVMOO.ProxyService.Observabal.Sub import Subject
 
+'''
+监听文件
+'''
+
 
 class ProxyFileWatcher(Subject):
     def __init__(self):
@@ -29,6 +33,11 @@ class ProxyFileWatcher(Subject):
         self._flag = False
 
 
+'''
+文件内容管理，记录文件内容，检测是否有变化
+'''
+
+
 class FileContentHolder(object):
     def __init__(self, file_path):
         self.FilePath = file_path
@@ -36,6 +45,7 @@ class FileContentHolder(object):
         with open(self.FilePath, 'r') as f:
             self.FileContentRecord = f.read()
 
+    # 检测文件内容是否变化，是则记录到 FileContentRecord
     def has_change(self):
         with open(self.FilePath, 'r') as f:
             file_content = f.read()

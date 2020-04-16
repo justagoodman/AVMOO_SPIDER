@@ -8,6 +8,9 @@ from AVMOO.ProxyService.ProxySource import XiciProxySource, GlobalProxySource, K
 header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                         'AppleWebKit/537.36 (KHTML, like Gecko) '
                         'Chrome/64.0.3282.186 Safari/537.36'}
+'''
+代理检验类，定时进行基本的检验，将通过的代理传递给 ProxyHolder 
+'''
 
 
 class ProxyValidator:
@@ -27,6 +30,7 @@ class ProxyValidator:
         KaiXinProxySource()
     ]
 
+    # :param holder :: {ProxyHolder}  Proxy管理类
     def __init__(self, holder):
         self.ProxyHolder = holder
         self.MINIMUM = 5
@@ -36,6 +40,9 @@ class ProxyValidator:
         self.add_proxy()
         self._work_thread.start()
 
+    '''
+    :param proxies :: { dict }  要进行检查的字典 
+    '''
     def check(self, proxies):
         self._pause = True
         ths = []
@@ -47,6 +54,7 @@ class ProxyValidator:
             t.join()
         self._pause = False
 
+    # 从 Source 中取得proxy :: {dict} 进行验证
     def add_proxy(self):
         results = []
         for source in self.Sources:
@@ -55,6 +63,7 @@ class ProxyValidator:
         self.check(results)
         # return results
 
+    # 线程的运行任务，定时执行
     def _auto_check(self):
         while self._flag:
             if not self._pause:
@@ -66,6 +75,7 @@ class ProxyValidator:
         s = dic['type'] + '://' + dic['ip'] + ':' + str(dic['port'])
         return {'http': s, 'https': s}
 
+    # 检验函数，通过proxy向目标网站请求，得到正确响应则添加到ProxyHolder
     def _check(self, ip):
         try:
             pro = self.dict2proxy(ip)
