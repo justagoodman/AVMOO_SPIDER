@@ -21,6 +21,8 @@ header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 class ProxySource(object):
     base_url = ""
 
+    name = "基类型"
+
     _ips = []
 
     time_span = 60*30
@@ -67,12 +69,14 @@ class ProxySource(object):
     def _work(self):
         while self._flag:
             time.sleep(self.time_span)
-            logging.info("updating source")
+            logging.info("updating source {}", self.name)
             self.get_proxies(page_count=5)
 
 
 class KuaiProxySource(ProxySource):
     base_url = "https://www.kuaidaili.com/free/inha/{}"
+
+    name = "快代理"
 
     def __init__(self):
         ProxySource.__init__(self)
@@ -107,6 +111,8 @@ class KuaiProxySource(ProxySource):
 
 class XiciProxySource(ProxySource):
     base_url = "http://www.xicidaili.com"
+
+    name = "西刺代理"
 
     genre_options = {
         "高匿": '/nn',
@@ -162,6 +168,8 @@ class GlobalProxySource(ProxySource):
     base_url = "https://ip.jiangxianli.com/?page={}"
     # base_url = "https://ip.jiangxianli.com/api/proxy_ip"
 
+    name = "全球代理"
+
     def __init__(self):
         ProxySource.__init__(self)
 
@@ -192,6 +200,8 @@ class GlobalProxySource(ProxySource):
 
 class YunProxySource(ProxySource):
     base_url = "http://www.ip3366.net/?stype=1&page={}"
+
+    name = "云代理"
 
     def __init__(self):
         ProxySource.__init__(self)
@@ -224,6 +234,8 @@ class YunProxySource(ProxySource):
 class QiYunProxySource(ProxySource):
     base_url = "https://www.7yip.cn/free/?action=china&page={}"
 
+    name = "七云代理"
+
     # def get_proxies(self, **kwargs):
     #     if "page_count" not in kwargs.keys():
     #         raise KeyError("not enough keys")
@@ -251,6 +263,8 @@ class QiYunProxySource(ProxySource):
 
 class XiaoShuProxySource(ProxySource):
     base_url = "http://www.xsdaili.com"
+
+    name = "小舒代理"
 
     time_span = 60*60
 
@@ -296,6 +310,8 @@ class SixSixProxySource(ProxySource):
                "sxb=&tqsl=100&port=&export=&ktip=&sxa=&" \
                "submit=%CC%E1++%C8%A1&textarea=http%3A%2F%2Fwww.66ip.cn%2F%3Fsxb%3D%26tqsl%3D100%26ports%255B%255D2%3D%26ktip%3D%26sxa%3D%26radio%3Dradio%26submit%3D%25CC%25E1%2B%2B%25C8%25A1"
 
+    name = "六六代理"
+
     time_span = 60*60
 
     def __init__(self):
@@ -325,6 +341,8 @@ class SixSixProxySource(ProxySource):
 
 class ZhangDaYeProxySource(ProxySource):
     base_url = "https://www.zdaye.com/dayProxy/ip/320452.html"
+
+    name = "站大爷代理"
 
     time_span = 60*60
 
@@ -368,6 +386,8 @@ class ZhangDaYeProxySource(ProxySource):
 
 class KaiXinProxySource(ProxySource):
     base_url = "http://www.kxdaili.com/dailiip.html"
+
+    name = "开心代理"
 
     def __init__(self):
         ProxySource.__init__(self)

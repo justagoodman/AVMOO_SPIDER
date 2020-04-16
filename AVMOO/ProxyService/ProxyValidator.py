@@ -14,9 +14,10 @@ header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 
 
 class ProxyValidator:
-    time_span = 30
 
-    good_proxies = []
+    ProxyHolder = None
+
+    time_span = 30
 
     Sources = [
         XiciProxySource(),
@@ -29,7 +30,8 @@ class ProxyValidator:
         KaiXinProxySource()
     ]
 
-    def __init__(self):
+    def __init__(self, holder):
+        self.ProxyHolder = holder
         self.MINIMUM = 5
         self._work_thread = threading.Thread(target=self._auto_check, daemon=True)
         self._flag = True
@@ -47,19 +49,6 @@ class ProxyValidator:
         for t in ths:
             t.join()
         self._pause = False
-        logging.info("found {} available proxies".format(self.good_proxies))
-
-    def get_good_proxy(self):
-        if len(self.good_proxies) == 0:
-            return None
-            # self.add_proxy()
-            # return self.get_good_proxy()
-        return self.good_proxies.pop()
-
-    def get_all(self):
-        res = self.good_proxies.copy()
-        self.good_proxies = []
-        return res
 
     def add_proxy(self):
         results = []
@@ -84,29 +73,21 @@ class ProxyValidator:
         try:
             pro = self.dict2proxy(ip)
             # print(pro)
-            url = 'https://avmask.com/cn/'
+            # url = 'https://www.baidu.com/'
+            url = 'https://avmoo.host/cn'
             r = requests.get(url, headers=header, proxies=pro, timeout=30)
             print(r)
             r.raise_for_status()
             print(r.status_code, ip['ip'])
         except Exception as e:
-            #print(e)
             pass
-            # if self.good_proxies.__contains__(ip):
-            #     self.good_proxies.remove(ip)
+            # logging.info("check proxy {} err:{}".format(ip, e))
         else:
-            if not self.has_the_same(ip):
-                self.good_proxies.append(ip)
-
-    def has_the_same(self, ip):
-        for pro in self.good_proxies:
-            if pro["ip"] == ip["ip"]:
-                return True
-        return False
-
+            logging.info("found proxy {}".format(ip))
+            self.ProxyHolder.append_passed_proxies(ip)
 
 
 if __name__ == "__main__":
     a = ProxyValidator()
-    b = a.get_good_proxy()
-    print(b)
+
+    print(a)
