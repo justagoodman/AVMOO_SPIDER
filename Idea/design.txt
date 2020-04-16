@@ -62,7 +62,7 @@ item Genre
             爬取过快会导致IP被封
 
 
-class :: ProxyProvider   ->   提供随机proxy,
+class :: ProxyProvider(give up)   ->   提供随机proxy,
 	good_proxies = [...]    ->   经过Validator验证有效的proxy
 	proxies_observer        ->   监听good_proxies的改变，但长度较小时，通过ProxySource添加proxies并验证
 
@@ -71,7 +71,7 @@ class :: ProxySource     ->   爬虫爬取不同网站的proxy
 class :: ProxyValidator  ->   检验proxy的可用性
 	proxies = [...]         ->   用于检验的proxies，每隔一定的时间就进行一次validate，去除无效proxy
 
-class :: ProxyFileHolder    ->   监听存储proxy的文件的变化，发生变化则检测内容是否合理，是则更新ProxyProvider的proxies，否则pass，间隔一定时间检测文件的修改时间
+class :: ProxyFileHolder(no user)    ->   监听存储proxy的文件的变化，发生变化则检测内容是否合理，是则更新ProxyProvider的proxies，否则pass，间隔一定时间检测文件的修改时间
 
 Provider  has  [Source, Source], Validator
 
@@ -84,6 +84,10 @@ Provider  has  [Source, Source], Validator
 	middleware -> ProxyProvider.remove_proxy -> ProxyProvider.add_proxy -> ProxyHolder.get_available -> 添加proxy
 	ProxyValidator.validated_proxies -> ProxyHolder
 
-2020 / 04 /15
-	class :: ProxyDispatcher -> get_proxy()  总是给出一个与上次使用时间间隔为 download_delay 的 proxy
+2020 / 04 / 15
+	class :: ProxyDispatcher -> get_proxy()  总是给出一个与上次使用时间间隔为 download_delay 的 proxy 放弃
 	class :: Provider -> 放弃
+
+2020 / 04 / 16、
+	+ class :: Proxy.last_request_time  添加一个属性记录上一次被使用的时间
+	直接由Holder分配proxy，根据proxy的上一次被使用时间，必须间隔一定时间，表示该proxy可被返回
