@@ -11,7 +11,7 @@ ProxySource类本质上是爬虫，爬取主流代理网站的免费代理<br>
 ProxyValidator类动态检测来自ProxySource的代理，
 将通过验证的代理传递给ProxyHolder<br>
 
-ProxyHolder类保存所有通过验证的代理,调用get_one方法获取一个可用代理(可能返回None)<br>
+ProxyHolder类保存所有通过验证的代理,调用get_one方法获取一个距离上次使用经过delay秒的可用代理(可能返回None)<br>
 
 Proxy类接受请求信息的反馈，调用good_proxy表示进行了一次成功的请求
 调用bad_proxy表示进行了一次失败的请求，Proxy类会定期检测失败率，
