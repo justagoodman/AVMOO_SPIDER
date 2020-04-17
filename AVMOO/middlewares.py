@@ -4,7 +4,7 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import psycopg2
+# import psycopg2
 from scrapy import signals
 from AVMOO.ProxyService.ProxyHolder import ProxyHolder
 import scrapy.exceptions
