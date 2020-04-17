@@ -1,7 +1,7 @@
 import threading
 import time
 import os
-from AVMOO.ProxyService.Observabal.Sub import Subject
+from .Observabal.Sub import Subject
 
 '''
 监听文件

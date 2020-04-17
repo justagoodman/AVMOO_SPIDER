@@ -1,5 +1,5 @@
-from AVMOO.ProxyService.ProxyValidator import ProxyValidator
-from AVMOO.ProxyService.Proxy import Proxy
+from .ProxyValidator import ProxyValidator
+from .Proxy import Proxy
 import logging
 import time
 import json
@@ -20,7 +20,7 @@ class ProxyHolder:
     '''
     def __init__(self, delay=1.2):
         self.Validator = ProxyValidator(self)
-        self.delay = 1.2  # 目标网站可以正常访问的最小delay
+        self.delay = delay  # 目标网站可以正常访问的最小delay
 
     # 判断 passed_proxies 是否已经存在相同的 IP
     def has_the_same(self, proxy_dic):
@@ -50,7 +50,7 @@ class ProxyHolder:
     # 增加 current_kick_times_flag ，将之前被剔除但没有被禁止的 proxy 再次放入 available_proxies
     # 重置这些再次使用的 proxy 的请求记录（err_times, success_times）
     def increase_flag(self):
-        logging.info("++++++++++++ increase flag ++++++++++++")
+        logging.warning("++++++++++++ increase flag ++++++++++++")
         self.current_kick_times_flag += 1
         for pro in self.passed_proxies:
             if (pro.kick_out_times <= self.current_kick_times_flag) and (pro.baned is not True):
@@ -89,8 +89,8 @@ class ProxyHolder:
         pros = []
         for pro in self.passed_proxies:
             if (pro.kick_out_times <= self.current_kick_times_flag) and (pro.baned is not True):
-                pros.append(pro)
-        with open('proxies.json', 'w+') as file:
+                pros.append({"ip": pro.ip, "port": pro.port, "type": pro.type})
+        with open('.proxies.json', 'w+') as file:
             json.dump(pros, file)
         logging.info('proxies saved')
 

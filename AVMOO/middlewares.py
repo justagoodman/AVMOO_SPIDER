@@ -8,15 +8,15 @@ import psycopg2
 from scrapy import signals
 from AVMOO.ProxyService.ProxyHolder import ProxyHolder
 import scrapy.exceptions
-from AVMOO.ProxyService.Proxy import Proxy
-from twisted.internet.error import TimeoutError, DNSLookupError, \
-        ConnectionRefusedError, ConnectionDone, ConnectError, \
-        ConnectionLost, TCPTimedOutError
-from twisted.web.client import ResponseFailed
-
-from scrapy.exceptions import NotConfigured
-from scrapy.utils.response import response_status_message
-from scrapy.core.downloader.handlers.http11 import TunnelError
+# from AVMOO.ProxyService.Proxy import Proxy
+# from twisted.internet.error import TimeoutError, DNSLookupError, \
+#         ConnectionRefusedError, ConnectionDone, ConnectError, \
+#         ConnectionLost, TCPTimedOutError
+# from twisted.web.client import ResponseFailed
+#
+# from scrapy.exceptions import NotConfigured
+# from scrapy.utils.response import response_status_message
+# from scrapy.core.downloader.handlers.http11 import TunnelError
 import time
 
 

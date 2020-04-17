@@ -2,7 +2,7 @@ import requests
 import time
 import threading
 import logging
-from AVMOO.ProxyService.ProxySource import XiciProxySource, GlobalProxySource, KuaiProxySource, YunProxySource, \
+from .ProxySource import XiciProxySource, GlobalProxySource, KuaiProxySource, YunProxySource, \
     QiYunProxySource, XiaoShuProxySource, SixSixProxySource, KaiXinProxySource
 
 header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
