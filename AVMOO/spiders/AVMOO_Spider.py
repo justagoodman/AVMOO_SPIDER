@@ -148,7 +148,8 @@ class AVMOO_Spider(scrapy.Spider):
                 if not self._check_av_exist(av_detail_url):
                     yield scrapy.Request(av_detail_url, self.parse_detail)
                 else:
-                    logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
+                    pass
+                    # logging.info("+++++++++++ skip one duplicated av record ++++++++++++")
 
             next_page_url = self._find_next_page_url(response)
             if next_page_url is not None:

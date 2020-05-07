@@ -3,6 +3,9 @@ from .Proxy import Proxy
 import logging
 import time
 import json
+import sys
+
+sys.setrecursionlimit(2000)
 
 '''
 管理和分发Proxy
@@ -58,6 +61,8 @@ class ProxyHolder:
                     self.available_proxies.append(pro)
                 pro.err_times = 0
                 pro.success_times = 0
+                pro.pre_err_times = 0
+                pro.pre_success_times = 0
 
     # 由 proxy :: {Proxy} 实例调用，移除自身
     # 从 available_proxies 移除 proxy
@@ -70,18 +75,23 @@ class ProxyHolder:
     # 面向使用者的接口，返回一个 proxy
     # 这个 proxy 距离上次被使用至少经过了 self.delay 秒
     # 如果一次遍历没有发现可用的 proxy 则返回None
-    def get_one(self):
+    def get_one(self, pre_time=0.0):
         time_now = time.time()
+        if len(self.available_proxies) == 0:
+            time_found = time.time()
+            logging.warning("search proxy failed spend {} seconds".format(time_found - time_now + pre_time))
+            return None
         for pro in self.available_proxies:
             if pro.last_request_time > time_now - self.delay:
                 continue
             if (pro.kick_out_times <= self.current_kick_times_flag) and (pro.baned is not True):
                 time_found = time.time()
-                logging.info("search proxy spend {} seconds".format(time_found-time_now))
+                logging.info("search proxy spend {} seconds".format(time_found-time_now+pre_time))
                 return pro
+        time.sleep(0.01)
         time_found = time.time()
-        logging.warning("search proxy failed spend {} seconds".format(time_found - time_now))
-        return None
+        # logging.warning("search proxy not found spend {} seconds".format(time_found - time_now))
+        return self.get_one(pre_time=(time_found - time_now + pre_time))
 
     # 将质量较高的 proxy 保存起来
     # 可以在 spider_closed 信号中调用

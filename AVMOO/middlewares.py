@@ -120,7 +120,7 @@ class AvmooDownloaderMiddleware(object):
                 raise scrapy.exceptions.IgnoreRequest('404 Page Not Found')
             if response.status == 403:
                 if "proxy_obj" in request.meta.keys():
-                    request.meta["proxy_obj"].baned = True
+                    request.meta["proxy_obj"].ban_proxy()
                     spider.logger.warning("oops! this proxy is being baned".format(request.meta["proxy"]))
 
             if "proxy_obj" in request.meta.keys():
@@ -142,6 +142,7 @@ class AvmooDownloaderMiddleware(object):
         # - return None: continue processing this exception
         # - return a Response object: stops process_exception() chain
         # - return a Request object: stops process_exception() chain
+        spider.logger.info(exception)
         if "proxy_obj" in request.meta.keys():
             request.meta["proxy_obj"].bad_proxy()
 

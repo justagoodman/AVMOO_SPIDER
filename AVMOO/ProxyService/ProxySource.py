@@ -68,7 +68,7 @@ class ProxySource(object):
     def _work(self):
         while self._flag:
             time.sleep(self.time_span)
-            logging.info("updating source {}", self.name)
+            logging.info("updating source {}".format(self.name))
             self.get_proxies(page_count=5)
 
 
@@ -412,7 +412,38 @@ class KaiXinProxySource(ProxySource):
             return []
 
 
+class JiSuProxySource(ProxySource):
+    base_url = "https://api.superfastip.com/ip/freeip?page={}"
+
+    def __init__(self):
+        ProxySource.__init__(self)
+
+    def get_proxies(self, **kwargs):
+        res = []
+        count = 0
+        while len(res) < 100:
+            count += 1
+            res.extend(self.parse_page(count))
+            time.sleep(2)
+            if count > 20:
+                break
+        self._ips = res
+
+    def parse_page(self, index):
+        results = []
+        try:
+            res = requests.get(self.base_url.format(index), headers=header)
+            data = res.json()
+            ips = data["freeips"]
+            for ip in ips:
+                results.append({"ip": ip["ip"], "port": ip["port"], "type": ip["type"]})
+            return results
+        except Exception as e:
+            logging.warning("parse page {} err:".format(self.base_url.format(index)), e)
+            return []
+
+
 if __name__ == "__main__":
-    a = SixSixProxySource()
+    a = JiSuProxySource()
 
     print(a.ips)

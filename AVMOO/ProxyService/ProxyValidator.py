@@ -3,7 +3,7 @@ import time
 import threading
 import logging
 from .ProxySource import XiciProxySource, GlobalProxySource, KuaiProxySource, YunProxySource, \
-    QiYunProxySource, XiaoShuProxySource, SixSixProxySource, KaiXinProxySource
+    QiYunProxySource, XiaoShuProxySource, SixSixProxySource, KaiXinProxySource, JiSuProxySource
 
 header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                         'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -27,7 +27,8 @@ class ProxyValidator:
         QiYunProxySource(),
         XiaoShuProxySource(),
         SixSixProxySource(),
-        KaiXinProxySource()
+        KaiXinProxySource(),
+        JiSuProxySource()
     ]
 
     # :param holder :: {ProxyHolder}  Proxy管理类

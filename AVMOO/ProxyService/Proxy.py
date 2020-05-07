@@ -16,6 +16,8 @@ class Proxy(object):
     ban_per_flag = 0.8      # when per of fails greater than 0.5 , we don't use this proxy anymore
     baned = False           # 是否不再使用
     last_request_time = 0   # 上一次被使用的时间
+    pre_success_times = 0
+    pre_err_times = 0
 
     '''
     :param ip    地址
@@ -47,31 +49,43 @@ class Proxy(object):
         self.err_times += 1
         self.check_self()
 
+    def ban_proxy(self):
+        self.baned = True
+        self.holder.kick_proxy(self)
+
     '''
     每进行一次请求就统计失败率，
     如果大于内置的 percent_flag 则剔除该对象，kick_out_times + 1
     如果大于内置的 ban_per_flag 则 baned 设置为 True ，标志该对象不再被使用                
     '''
     def check_self(self):
-        if not (self.err_times+self.success_times) % 10 == 0:
+        if not (self.err_times+self.success_times) % 20 == 0:
             # print("dont check ", self.success_times+self.err_times)
             return
         # print("check ", self.success_times + self.err_times)
 
-        if self.current_fail_percent() > self.percent_flag:
+        cur_fail_percent = self.current_fail_percent()
+
+        if cur_fail_percent > self.percent_flag:
             self.kick_out_times += 1
             self.holder.kick_proxy(self)
-        if self.current_fail_percent() > self.ban_per_flag:
+        if cur_fail_percent > self.ban_per_flag:
             logging.warning("this proxy {} will not use anymore ".format(self.to_string()))
-            self.baned = True
+            self.ban_proxy()
 
     '''
     计算当前对象的失败率
     '''
     def current_fail_percent(self):
-        if self.err_times+self.success_times == 0:
-            return 0
-        per = self.err_times / (self.err_times+self.success_times)
+        if self.pre_success_times+self.pre_err_times == 0:
+            if self.err_times+self.success_times == 0:
+                per = 0
+            else:
+                per = self.err_times/(self.success_times+self.err_times)
+        else:
+            per = self.pre_err_times / (self.pre_err_times + self.pre_success_times)
+        self.pre_err_times = self.err_times
+        self.pre_success_times = self.success_times
         return per
 
     '''
