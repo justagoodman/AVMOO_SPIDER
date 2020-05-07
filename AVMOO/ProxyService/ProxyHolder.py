@@ -101,7 +101,7 @@ class ProxyHolder:
             if (pro.kick_out_times <= self.current_kick_times_flag) and (pro.baned is not True):
                 pros.append({"ip": pro.ip, "port": pro.port, "type": pro.type})
         with open('.proxies.json', 'w+') as file:
-            json.dump(pros, file)
+            json.dump(pros, file, indent=4)
         logging.info('proxies saved')
 
 
